@@ -10,6 +10,8 @@ const routes = [
       { path: '/line', component: () => import('pages/line.vue') },
       { path: '/eeg', component: () => import('pages/eeg.vue') },
       { path: '/eeg2', component: () => import('pages/eeg2.vue') },
+      { path: '/eeg3', component: () => import('pages/eeg3.vue') },
+      { path: '/eeg4', component: () => import('pages/eeg4.vue') },
     ]
   },
 

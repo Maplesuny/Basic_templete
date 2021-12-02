@@ -125,6 +125,13 @@ export default {
                         gridIndex: idx,
                         min: 512 * start,
                         max: 512 * end,
+                        splitNumber: 2,
+                        // minorTick: {
+                        //     // 顯示刻度線
+                        //     show: true,
+                        //     splitNumber: 1,
+                        //     length: 15
+                        // },
                     });
                     yAxis.push({
                         show: false,
@@ -135,6 +142,7 @@ export default {
                         splitLine: {
                             show: true,
                         },
+                        yAxisIndex: idx,
                     });
                     grid.push({
                         height: "30px",
@@ -174,11 +182,11 @@ export default {
                         // axisTick: {
                         //     alignWithLabel: true
                         // },
-                        interval: 1,
-                        axisLabel: {
-                            interval: 0,//代表显示所有x轴标签显示
+                        interval: 0,
+                        // axisLabel: {
+                        //     interval: 0,//代表显示所有x轴标签显示
 
-                        },
+                        // },
                         // interval: 1,
                         // minorTick: {
                         //     // 顯示刻度線
@@ -186,12 +194,12 @@ export default {
                         //     splitNumber: 1,
                         //     length: 15
                         // },
-                        // minorSplitLine: {
-                        //     show: true
-                        // },
+                        minorSplitLine: {
+                            show: true
+                        },
 
                         // axisTick: {
-                        //     show: true,
+                        //     show: false,
                         //     interval: 1,
                         // },
                         // axisLabel: {

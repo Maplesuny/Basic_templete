@@ -2,152 +2,102 @@
     <div class="q-pa-md">
         <div class="echarts-box">
             <q-page-container>
-                <div id="myEchatts" :style="{ width: '1600px', height: 44 * 50 + 'px' }"></div>
-                <div id="type">dsfsdfd</div>
+                <div id="myEchats" :style="{ width: '1600px', height: 44 * 30 + 'px' }"></div>
             </q-page-container>
         </div>
     </div>
 </template>
 
-
 <script>
 import { ref, onMounted } from 'vue'
 import * as echarts from 'echarts'
-// import * as echarts from 'echarts/lib/echarts';
 import axios from 'axios'
-// import json from '../assets/Fp1_A1_0_20s.json'
 export default {
     setup () {
         const start_time = ref(0)
-        const end_time = ref(20)
+        const end_time = ref(10)
         const montage_type = ref(0)
         const channel_array = ref([])
-        const myChart = ref(null)
-        let color = ref("#3a3c42");
-        // 取出channel前面數字儲存
-        let channel_number_arr = [];
         // const json_url = 'http://127.0.0.1:80/api/v1/eegData?start_time=' + start_time.value + '&end_time=' + end_time.value + '&montage_type=' + montage_type.value
         let json_url = 'http://10.65.51.240:28081/api/v1/eegData?start_time=' + start_time.value + '&end_time=' + end_time.value + '&montage_type=' + montage_type.value
 
-        // // 取得目前寬度，每次刷新比例會適中
-        let get_width = document.documentElement.clientWidth
-        let fixed_ = ref("")
-        fixed_.value = (get_width - 150) + 'px'
-
+        // 取得channel 名稱
         function channel_name_function (data, arr_length) {
             for (let i = 0; i < arr_length; i++) {
                 channel_array.value.push(data[i]['id'])
             }
         }
 
-        let save_arr = []
-        function convert_sec (number, data, idx) {
-            const base = end_time.value / number
-            const list_array = []
-            let sum = 0
+        // 將數量換算成秒 ,number : 有幾筆資料
+        function Convert_sec (number) {
+            const dataArray = [];
+            // 基底
+            let base = end_time.value / number;
+            let sum = 0;
             for (let i = 0; i < number; i++) {
-                sum = sum + base
-                // count_arr.value.push([sum, data[16]['value'][i]])
-                list_array.push([sum, data[idx]['value'][i]])
+                sum = sum + base;
+                dataArray.push(sum);
             }
-
-            save_arr.push(list_array)
-            return save_arr
-        }
-
-        function refreash_page () {
-            // 讓頁面重新渲染
-            const option2 = myChart.value.getOption()
-            option2 && myChart.value.setOption(option2);
+            return dataArray;
         }
 
         function SetOption (start, end) {
-            const chartDom = document.getElementById("myEchatts")
-            myChart.value = echarts.init(chartDom)
-
-            const title = []
-            const xAxis = []
-            const yAxis = []
-            const grid = []
-            const series = []
+            const chartDom = document.getElementById("myEchats");
+            const myChart = echarts.init(chartDom);
+            const title = [];
+            const xAxis = [];
+            const yAxis = [];
+            const grid = [];
+            const series = [];
 
             axios.get(json_url).then((res) => {
-                //請求成功
                 const data = res.data
-                // const data = json
-                const data_len = data.length
-                channel_name_function(res.data, data_len)
-                console.log('channel名稱列表', channel_array.value)
-
-
+                const data_len = data.length // channel 長度
+                // 取得channel name
+                channel_name_function(data, data_len)
                 // Count Channel number
                 let count_channel = [];
                 for (let i = 0; i < Object.keys(data).length; i++) {
                     count_channel.push(i);
                 }
 
-                // 第一筆資料長度
-                const first_data_length = data[0]['value'].length
-                const lsat_channel_index = first_data_length - 1
-
-                channel_array.value.forEach(function (egg_parameter, idx) {
-                    let arr_split = channel_array.value[idx].split("");
-                    for (let l = 0; l < 3; l++) {
-                        let conver_number = Number(arr_split[l]);
-                        if (!isNaN(conver_number)) {
-                            channel_number_arr.push(conver_number);
-                            if (conver_number % 2 === 0) {
-                                color.value = "#1607ed";
-                            } else if (conver_number % 2 != 0) {
-                                color.value = "#ed070f";
-                            } else {
-                                color.value = "#0d0c0c";
-                            }
-                        }
-                    }
-
-                    const show = ref(false)
-                    const label_show = ref(false)
-                    if (data[idx]["id"] === "ECG") {
-                        color.value = "#0d0000";
-                        show.value = true
-                        label_show.value = true
-                    }
-
-                    convert_sec(512 * end_time.value, data, idx)
+                channel_array.value.forEach(function (eeg_parameter, idx) {
                     title.push({
                         id: idx,
                         textBaseline: 'middle',
                         top: (idx * 360) / 8.2 + 50 + "px",
                         left: '1%',
-                        text: egg_parameter,
+                        text: eeg_parameter,
                         bottom: "20"
                     });
                     xAxis.push({
-                        type: 'value',
+                        type: "category",
                         show: true,
+                        data: Convert_sec(512 * end_time.value),
+                        // data: 512 * end_time.value,
+                        boundaryGap: true,
                         minorSplitLine: {
-                            show: show.value
+                            show: true
                         },
                         minorTick: {
                             // 顯示刻度線
-                            show: true,
+                            show: false,
                             splitNumber: 1,
-                            length: 15
+                            length: 20
                         },
                         // axisTick: {
                         //     show: true,
                         //     interval: 1,
                         // },
                         axisLabel: {
-                            show: label_show.value,
-                            // interval: 0,
+                            show: true,
+                            interval: 512,
                         },
                         gridIndex: idx,
 
                         min: start,
-                        max: end,
-                        interval: 1,
+                        max: 512 * end,
+                        interval: 512,
                     });
 
                     yAxis.push({
@@ -171,8 +121,8 @@ export default {
                     })
 
                     grid.push({
-                        height: "30px",
-                        top: (idx * 360) / 8.2 + 35 + "px",
+                        height: "60px",
+                        top: (idx * 760) / 8.2 + 35 + "px",
                         // top: (idx * 120) + 55 + 'px',
                         left: "13%",
                         right: "5%",
@@ -182,15 +132,14 @@ export default {
 
                     series.push({
                         type: 'line',
-                        data: save_arr[idx],
+                        data: data[idx]['value'],
                         symbol: 'none',
-                        color: color.value,
                         smoth: true,
                         xAxisIndex: idx,
                         yAxisIndex: idx
                     })
-                })
 
+                })
 
                 let option = {
                     animation: false,
@@ -243,35 +192,21 @@ export default {
                         },
                     },
                 }
-
-                option && myChart.value.setOption(option);
-
-
+                option && myChart.setOption(option);
             }).catch((err) => {
-                alert('請求失敗')
-                console.log('請求失敗', err)
+                alert('false')
+                console.log('err :', err)
             })
         }
 
-        // setTimeout(refreash_page, 1000);
+
 
         onMounted(() => {
             SetOption(start_time.value, end_time.value)
         })
-
-
         return {
-            channel_array,
-            styleobject: {
-                width: fixed_.value,
-                height: '300px'
-            }
+
         }
     },
 }
 </script>
-<style scoped>
-.echarts-box {
-    display: flex;
-}
-</style>

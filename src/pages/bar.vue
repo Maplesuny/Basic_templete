@@ -16,7 +16,7 @@ export default {
         let ww = document.documentElement.clientWidth
         let fixed_ = ref("")
 
-        fixed_.value = ww - 170 + 'px'
+        fixed_.value = ww - 5 + 'px'
         onMounted(() => {
             const chartDom = document.getElementById("myEcharts");
             const myChart = echarts.init(chartDom);
@@ -131,5 +131,3 @@ export default {
     }
 };
 </script> 
-<style lang="SCSS ">
-</style>
