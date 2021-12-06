@@ -256,7 +256,8 @@ export default {
         // setTimeout(refreash_page, 1000);
 
         onMounted(() => {
-            SetOption(start_time.value, end_time.value)
+            // SetOption(start_time.value, end_time.value)
+            SetOption(0, 10)
         })
 
 

@@ -22,7 +22,8 @@ export default {
         const myChart = ref(null)
         const merge_arr = ref([])
         const count_arr = ref([]) // 放資料轉時間的array
-        const json_url = 'http://127.0.0.1:80/api/v1/eegData?start_time=' + start_time.value + '&end_time=' + end_time.value + '&montage_type=' + montage_type.value
+        // const json_url = 'http://127.0.0.1:80/api/v1/eegData?start_time=' + start_time.value + '&end_time=' + end_time.value + '&montage_type=' + montage_type.value
+        let json_url = 'http://10.65.51.240:28081/api/v1/eegData?start_time=' + start_time.value + '&end_time=' + end_time.value + '&montage_type=' + montage_type.value
 
         // // 取得目前寬度，每次刷新比例會適中
         let get_width = document.documentElement.clientWidth
