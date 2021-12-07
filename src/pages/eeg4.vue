@@ -1,42 +1,72 @@
-    <template>
+<template>
+    <!-- <div class="q-pa-md">
+        <q-btn color="purple" @click="showLoading" label="Show Loading" />
+    </div>-->
     <div class="echarts-box">
-        <div id="myEchats" :style="{ width: '1600px', height: 44 * 19 + 'px' }"></div>
-        <div id="timeline-container" style="position: absolute;top: 130px;left: 180px;z-index: -1;"></div>
+        <div id="myEchats" :style="{ width: '1800px', height: 44 * 19 + 'px' }"></div>
+        <id id="testtext" :style="{ width: '600px', height: 40 * 10 + 'px' }">
+            <Todo :inputText="ss_ing"></Todo>
+        </id>
     </div>
     <div id="pagination_class">
-        <q-btn @click="pre_page" v-bind:disabled="page <= 1">上一頁</q-btn>
-        <p>{{ page }} / {{ maxPages }}</p>
-        <q-btn @click="next(data_len)" v-bind:disabled="page >= maxPages">下一頁</q-btn>
+        <q-btn v-bind:disabled="page <= Minpage" @click="pre_button">上一頁</q-btn>
+        <p>{{ page }} / {{ Maxpage }}</p>
+        <q-btn v-bind:disabled="page >= Maxpage" @click="next_button">下一頁</q-btn>
     </div>
 </template>
 
 <script>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import axios from 'axios'
-import drawTimeLine from '../action/Time-line'
+import { useQuasar } from 'quasar'
+import { sharpSignalCellularAlt } from '@quasar/extras/material-icons-sharp'
+import todo from '../pages/TODO.vue'
+
 export default {
+    components: {
+        Todo: todo,
+    },
     setup () {
+        const $q = useQuasar()
+        let timer
+
+        const ss_ing = ref("sdfd")
+
+        let range_start;
+        let range_end;
+        let select_start = ref(0);
+        let select_end = ref(0);
+
         const start_time = ref(0)
-        const end_time = ref(20)
+        const end_time = ref(50)
+        var default_startTime = ref(0)
+        var default_endTime = ref(10)
         const montage_type = ref(0)
         const channel_array = ref([])
         const axisLabel_show = ref(false)
         const default_color = ref("#3a3c42");
         const data_len = ref(0)
-
-        const myChart = ref(null)
-
-
-
-        let page = ref(1)
-        let minPage = 0
-        let maxPages = end_time.value / 10
+        // important           // const myChart = ref() 用這個會有錯誤
+        var myChart
 
         // 取出channel前面數字儲存
         let channel_number_arr = [];
-        // const json_url = 'http://127.0.0.1:80/api/v1/eegData?start_time=' + start_time.value + '&end_time=' + end_time.value + '&montage_type=' + montage_type.value
-        let json_url = 'http://10.65.51.240:28081/api/v1/eegData?start_time=' + start_time.value + '&end_time=' + end_time.value + '&montage_type=' + montage_type.value
+
+        const page = ref(1)
+        const Minpage = ref(1)
+        const Maxpage = ref(end_time.value / 10)
+
+        watch(page, () => {
+            console.log('當前page : ', page.value)
+            // Update_Option(page.value)
+        })
+
+
+
+        // const json_url = 'https://cdn.jsdelivr.net/gh/apache/echarts-website@asf-site/examples/data/asset/data/aqi-beijing.json'
+        const json_url = 'http://10.65.51.240:28081/api/v1/eegData?start_time=' + start_time.value + '&end_time=' + end_time.value + '&montage_type=' + montage_type.value
+
 
         // 取得channel 名稱
         function channel_name_function (data, arr_length) {
@@ -59,66 +89,172 @@ export default {
             return save_arr
         }
 
-        // 更改
-        function seeOO (dataLength) {
-            console.log('seeOO')
-            let option = myChart.value.getOption()
-            // console.log(option)
-            for (let i = 0; i < dataLength; i++) {
-                option.xAxis[i].min = 10
-                option.xAxis[i].max = 20
-            }
-            option && myChart.value.setOption(option);
-            console.log('seeget', myChart.value.getOption());
+        //上一頁
+        function pre_button () {
+            page.value--
+            Update_Option(page.value)
         }
 
-        function refresh () {
-            let option2 = myChart.value.getOption()
-            option2 && myChart.value.setOption(option2);
-            console.log('Refresh')
-        }
-
-        // 上一頁
-        function pre_page () {
-            watch(page, () => {
-                console.log('現在', page.value)
-            })
-
-            page.value = page.value - 1
-        }
         // 下一頁
-        function next (dataLength) {
-            page.value = page.value + 1
-            console.log('seeOO')
-            let option = myChart.value.getOption()
-            // console.log(option)
-            for (let i = 0; i < dataLength; i++) {
-                option.xAxis[i].min = 10
-                option.xAxis[i].max = 20
-            }
-            option && myChart.value.setOption(option);
-            console.log('seeget', myChart.value.getOption());
+        function next_button () {
+            // 當前頁數增加
+            page.value++
+            Update_Option(page.value)
+
         }
 
-        function SetOption (Dom, chart, start, end) {
-            Dom = document.getElementById("myEchats");
-            chart = echarts.init(Dom);
-            const title = [];
+        // update 頁數 & Option
+        function Update_Option (page) {
+            console.log('update_option')
+            var start = (page - 1) * 10
+            var end = page * 10
+
+            console.log('start_end', start, end)
+            // Compare === 'next' ? (start = start_time.value + 10) : (start = start_time.value - 10)
             const xAxis = [];
             const yAxis = [];
-            const grid = [];
-            const series = [];
+            const change_axisLabel_show = ref(false)
+            channel_array.value.forEach(function (eeg_parameter, idx) {
+                if (eeg_parameter === "ECG") {
+                    default_color.value = "#0d0000";
+                    change_axisLabel_show.value = !change_axisLabel_show.value
+                }
+                xAxis.push({
+                    type: 'value',
+                    show: true,
+                    splitLine: {
+                        // 坐標軸分隔線
+                        show: true,
+                        lineStyle: {
+                            color: ['#626366'],
+                            width: 0.5,
+                            type: 'solid',
+                            join: 'miter'
+                        }
+
+                    },
+                    axisLabel: {
+                        show: change_axisLabel_show.value,
+                    },
+                    gridIndex: idx,
+                    min: start,
+                    max: end,
+                    interval: 1,
+                })
+                yAxis.push({
+                    show: false,
+                    type: 'value',
+                    scale: true,
+                    axisLabel: {
+                        show: true,
+                        showMinLabel: true,
+                        showMaxLabel: true,
+
+                    },
+                    gridIndex: idx,
+                    // 網格線
+                    splitLine: {
+                        show: false
+                    },
+                    // interval、min、max 要一起搭配
+                    // interval: 100000,
+                    // max: 200,
+                    // min: -200,
+                })
+            })
+            let option = {
+                xAxis: xAxis,
+                yAxis: yAxis
+            }
+
+            myChart.setOption(option)
+        }
+
+
+        function All_data_Option (start, end) {
+            const xAxis = [];
+            const yAxis = [];
+            const change_axisLabel_show = ref(false)
+            channel_array.value.forEach(function (eeg_parameter, idx) {
+                if (eeg_parameter === "ECG") {
+                    default_color.value = "#0d0000";
+                    change_axisLabel_show.value = !change_axisLabel_show.value
+                }
+                xAxis.push({
+                    type: 'value',
+                    show: true,
+                    splitLine: {
+                        // 坐標軸分隔線
+                        show: true,
+                        lineStyle: {
+                            color: ['#626366'],
+                            width: 0.5,
+                            type: 'solid',
+                            join: 'miter'
+                        }
+
+                    },
+                    axisLabel: {
+                        show: change_axisLabel_show.value,
+                    },
+                    gridIndex: idx,
+                    min: start,
+                    max: end,
+                    interval: 1,
+                })
+                yAxis.push({
+                    show: false,
+                    type: 'value',
+                    scale: true,
+                    axisLabel: {
+                        show: true,
+                        showMinLabel: true,
+                        showMaxLabel: true,
+
+                    },
+                    gridIndex: idx,
+                    // 網格線
+                    splitLine: {
+                        show: false
+                    },
+                    // interval、min、max 要一起搭配
+                    // interval: 100000,
+                    // max: 200,
+                    // min: -200,
+                })
+            })
+            let option = {
+                xAxis: xAxis,
+                yAxis: yAxis
+            }
+
+            myChart.setOption(option)
+        }
+
+
+        //Setting the  ECHART option 
+        function setOption (start, end) {
+            const chartDom = document.getElementById('myEchats');
+            myChart = echarts.init(chartDom);
             axios.get(json_url).then((res) => {
+                const title = [];
+                const xAxis = [];
+                const yAxis = [];
+                const grid = [];
+                const series = [];
+
                 const data = res.data
                 data_len.value = data.length
 
                 // 取得channel name
                 channel_name_function(data, data_len.value)
+
                 // Count Channel number
                 let count_channel = [];
                 for (let i = 0; i < Object.keys(data).length; i++) {
                     count_channel.push(i);
                 }
+
                 channel_array.value.forEach(function (eeg_parameter, idx) {
                     convert_sec(512 * end_time.value, data, idx)
                     let arr_split = channel_array.value[idx].split("");
@@ -167,20 +303,6 @@ export default {
                         axisLabel: {
                             show: axisLabel_show.value,
                         },
-                        // minorSplitLine: {
-                        //     show: true
-                        // },
-                        // minorTick: {
-                        //     // 顯示刻度線
-                        //     show: true,
-                        //     splitNumber: 1,
-                        //     length: 15
-                        // },
-                        // axisLabel: {
-                        //     // 要用show.value
-                        //     show: true,
-                        //     // interval: 10,
-                        // },
                         gridIndex: idx,
                         min: start,
                         max: end,
@@ -194,9 +316,7 @@ export default {
                             show: true,
                             showMinLabel: true,
                             showMaxLabel: true,
-                            // fromatter: function (value) {
-                            //     return value;
-                            // }
+
                         },
                         gridIndex: idx,
                         // 網格線
@@ -207,17 +327,17 @@ export default {
                         // interval: 100000,
                         // max: 200,
                         // min: -200,
-
                     })
                     grid.push({
+                        id: idx,
                         height: "30px",
                         top: (idx * 360) / 8.2 + 35 + "px",
-                        // top: (idx * 120) + 55 + 'px',
                         left: "6.5%",
                         right: "5%",
                         containLabel: false
                     });
                     series.push({
+                        id: idx,
                         type: 'line',
                         data: save_arr[idx],
                         symbol: 'none',
@@ -235,6 +355,12 @@ export default {
                     yAxis: yAxis,
                     grid: grid,
                     series: series,
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross'
+                        }
+                    },
                     dataZoom: [
                         {
                             type: 'inside',
@@ -246,12 +372,6 @@ export default {
                             show: true,
                         }
                     ],
-                    tooltip: {
-                        trigger: 'axis',
-                        axisPointer: {
-                            type: 'cross'
-                        }
-                    },
                     toolbox: {
                         right: 10,
                         feature: {
@@ -263,61 +383,19 @@ export default {
                             mytools: {
                                 show: true,
                                 title: "Clear",
-                                icon: "M12,0A12,12 0 0,1 24,12A12,12 0 0,1 12,24A12,12 0 0,1 0,12A12,12 0 0,1 12,0M12,2A10,10 0 0,0 2,12C2,14.4 2.85,16.6 4.26,18.33L18.33,4.26C16.6,2.85 14.4,2 12,2M12,22A10,10 0 0,0 22,12C22,9.6 21.15,7.4 19.74,5.67L5.67,19.74C7.4,21.15 9.6,22 12,22Z",
+                                // icon: "M12,0A12,12 0 0,1 24,12A12,12 0 0,1 12,24A12,12 0 0,1 0,12A12,12 0 0,1 12,0M12,2A10,10 0 0,0 2,12C2,14.4 2.85,16.6 4.26,18.33L18.33,4.26C16.6,2.85 14.4,2 12,2M12,22A10,10 0 0,0 22,12C22,9.6 21.15,7.4 19.74,5.67L5.67,19.74C7.4,21.15 9.6,22 12,22Z",
+                                icon: sharpSignalCellularAlt,
                                 onclick: function () {
-                                    myChart.value.dispatchAction({
-                                        type: "restore",
-                                    });
+                                    // myChart.dispatchAction({
 
-
-                                    // // 清除頁籤
-                                    // page.value = 1
-                                    // console.log('Restore')
-                                    // setTimeout(refresh, 50);
-                                },
-                            },
-                            mytools0: {
-                                show: true,
-                                title: "dataZoom",
-                                icon: "M12,0A12,12 0 0,1 24,12A12,12 0 0,1 12,24A12,12 0 0,1 0,12A12,12 0 0,1 12,0M12,2A10,10 0 0,0 2,12C2,14.4 2.85,16.6 4.26,18.33L18.33,4.26C16.6,2.85 14.4,2 12,2M12,22A10,10 0 0,0 22,12C22,9.6 21.15,7.4 19.74,5.67L5.67,19.74C7.4,21.15 9.6,22 12,22Z",
-                                onclick: function () {
-                                    myChart.value.dispatchAction({
-                                        type: "takeGlobalCursor",
-                                        key: 'dataZoomSelect',
-                                        dataZoomSelectActive: true
-                                    });
-
-                                    myChart.value.dispatchAction({
-                                        type: 'dataZoom',
-                                        dataZoomIndex: 0,
-                                        start: 0,
-                                        end: 100,
-                                    })
-
-                                    // // 清除頁籤
-                                    // page.value = 1
-                                    // console.log('Restore')
-                                    setTimeout(refresh, 50);
-                                },
-                            },
-                            mytools1: {
-                                show: true,
-                                title: "hihi2",
-                                icon: "M12,0A12,12 0 0,1 24,12A12,12 0 0,1 12,24A12,12 0 0,1 0,12A12,12 0 0,1 12,0M12,2A10,10 0 0,0 2,12C2,14.4 2.85,16.6 4.26,18.33L18.33,4.26C16.6,2.85 14.4,2 12,2M12,22A10,10 0 0,0 22,12C22,9.6 21.15,7.4 19.74,5.67L5.67,19.74C7.4,21.15 9.6,22 12,22Z",
-                                onclick: function () {
-                                    myChart.value.dispatchAction({
-                                        type: "takeGlobalCursor",
-                                        key: 'brush',
-                                        brushOption: {
-                                            brushType: 'rect'
-                                        }
-                                    });
-
-                                    console.log('clear')
+                                    //     type: "restore",
+                                    // });
+                                    All_data_Option(start_time.value, end_time.value)
                                 },
                             },
                         }
                     },
+
                     brush: {
                         id: 'brush',
                         geoIndex: 'all',
@@ -341,52 +419,129 @@ export default {
                     },
                 }
 
-                option && chart.setOption(option);
 
-                // let seeoption = myChart.getOption()
-                // console.log('seeee', seeoption)
-                // let option_xAxis_min = option.xAxis[0].min
-                // let option_xAxis_max = option.xAxis[0].max
-                // seeOO(myChart)
+                function select_brushType (params, whichLinx) {
+                    let brushComponent = params.batch[0];
+                    console.log(brushComponent);
+
+                    // 判斷X軸是LineX 還是 rect
+                    if (whichLinx !== "lineX") {
+                        range_start = brushComponent.areas[0].range[0][0];
+                        range_end = brushComponent.areas[0].range[0][1];
+                    } else {
+                        range_start = brushComponent.areas[0].range[0];
+                        range_end = brushComponent.areas[0].range[1];
+                    }
+                    let bb_start = brushComponent.areas[0].range[1][0];
+                    let bb_end = brushComponent.areas[0].range[1][1];
+                    console.log("range_start", range_start);
+                    console.log("range_end", range_end);
+
+                    console.log('bb_start/end : ', bb_start, bb_end)
+
+                    // 再將rnage座標轉作為xy的座標(coordRange的值)
+                    let coordRange_start = myChart.convertFromPixel({ seriesIndex: 0 }, [range_start, range_end])[0];
+
+                    let corrdRange_end = myChart.convertFromPixel({ seriesIndex: 0 }, [range_end, range_start])[0];
+
+                    console.log("coordRange_start", coordRange_start);
+                    console.log("corrdRange_end", corrdRange_end);
+
+                    ss_ing.value =
+                        "Rect Range of :" +
+                        coordRange_start +
+                        " second 到 " +
+                        corrdRange_end +
+                        " second";
+                    console.log("ss_ing", ss_ing.value);
+
+                    let aa = option.title[0];
+                    console.log(aa);
+                }
 
 
-                watch(page, () => {
-                    console.log('page is :', page.value)
+                myChart.on('brushSelected', function (params) {
+                    let brushComponent = params.batch[0]
+                    console.log('brushComponent', brushComponent)
+
+                    if (brushComponent.areas[0] !== undefined) {
+
+                        let type = brushComponent.areas[0].brushType;
+                        select_brushType(params, type);
+
+                    }
                 })
 
 
 
+                option && myChart.setOption(option);
 
-                // drawTimeLine("#timeline-container", end_time.value / 10, data.length, rangeArray);
             }).catch((err) => {
-                alert('false')
-                console.log('Error message :', err)
+                alert('error', err)
+                console.log('err :', err)
             })
         }
 
 
+        //Loading
+        function showLoading () {
+            $q.loading.show({
+                message: 'Doing something. Please wait...',
+                boxClass: 'bg-grey-2 text-grey-9',
+                spinnerColor: 'primary'
+            })
 
-        onMounted(() => {
-            const chartDom = document.getElementById("myEchats");
-            myChart.value = echarts.init(chartDom);
+            // hiding in 3s
+            timer = setTimeout(() => {
+                $q.loading.hide()
+                timer = void 0
+            }, end_time.value * 30)
+        }
 
-            SetOption(chartDom, myChart.value, start_time.value, end_time.value)
+        // Run Loading
+        showLoading()
 
+        onBeforeUnmount(() => {
+
+            if (timer !== void 0) {
+                clearTimeout(timer)
+                $q.loading.hide()
+            }
         })
 
+        onMounted(() => {
+            // let default_startTime = 0
+            // let default_endTime = 10
+            setOption(default_startTime.value, default_endTime.value)
+        })
+
+
         return {
-            myChart, data_len,
-            page, minPage, maxPages,
-            next, pre_page, seeOO
+            page, Minpage, Maxpage,
+            pre_button, next_button,
+            showLoading,
+            ss_ing
         }
+
+
     },
 }
 </script>
+
 <style scoped>
+.echarts-box {
+    display: flex;
+}
+.testtext {
+    top: 20px;
+}
 #pagination_class {
     display: flex;
-    top: 20px;
-    justify-content: center;
+    /* margin-left: 700px; */
+    margin-top: 50px;
+
+    justify-content: left;
     justify-content: space-evenly;
+    /* justify-content: center; */
 }
 </style>
