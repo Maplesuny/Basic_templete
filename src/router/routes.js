@@ -1,6 +1,7 @@
 
 const routes = [
   {
+
     path: '/',
     component: () => import('layouts/myLayout.vue'),
     children: [
@@ -11,7 +12,9 @@ const routes = [
       { path: '/eeg', component: () => import('pages/eeg.vue') },
       { path: '/eeg2', component: () => import('pages/eeg2.vue') },
       { path: '/eeg3', component: () => import('pages/eeg3.vue') },
-      { path: '/eeg4', component: () => import('pages/eeg4.vue') },
+      { path: '/A1_A2', component: () => import('pages/A1_A2.vue') },
+      { path: '/CZ', component: () => import('pages/CZ.vue') },
+      { path: '/Double_Banana', component: () => import('pages/Double Banana.vue') },
     ]
   },
 

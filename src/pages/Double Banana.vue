@@ -3,7 +3,7 @@
         <q-btn color="purple" @click="showLoading" label="Show Loading" />
     </div>-->
     <div class="echarts-box">
-        <div id="myEchats" :style="{ width: '1800px', height: 44 * 19 + 'px' }"></div>
+        <div id="myEchats" :style="{ width: '1800px', height: 49 * 19 + 'px' }"></div>
         <id id="testtext" :style="{ width: '600px', height: 40 * 10 + 'px' }">
             <Todo :inputText="ss_ing"></Todo>
         </id>
@@ -31,7 +31,7 @@ export default {
         const $q = useQuasar()
         let timer
 
-        const ss_ing = ref("sdfd")
+        const ss_ing = ref("")
 
         let range_start;
         let range_end;
@@ -39,10 +39,10 @@ export default {
         let select_end = ref(0);
 
         const start_time = ref(0)
-        const end_time = ref(50)
+        const end_time = ref(20)
         var default_startTime = ref(0)
         var default_endTime = ref(10)
-        const montage_type = ref(0)
+        const montage_type = ref(2)
         const channel_array = ref([])
         const axisLabel_show = ref(false)
         const default_color = ref("#3a3c42");
@@ -93,6 +93,7 @@ export default {
         function pre_button () {
             page.value--
             Update_Option(page.value)
+            Clear_select()
         }
 
         // 下一頁
@@ -100,6 +101,7 @@ export default {
             // 當前頁數增加
             page.value++
             Update_Option(page.value)
+            Clear_select()
 
         }
 
@@ -231,6 +233,29 @@ export default {
             myChart.setOption(option)
         }
 
+        // [Echarts] Clear Select 
+        function Clear_select () {
+            myChart.dispatchAction({
+                type: "brush",
+                command: 'clear',
+                areas: []
+            });
+        }
+
+        function create_select () {
+            myChart.dispatchAction({
+                type: 'brush',
+                areas: [
+                    {
+                        burshType: 'rect',
+                        xAxisIndex: 0,
+                        coordRange: [1378, 1518]
+                    }
+                ]
+            })
+        }
+
+
 
         //Setting the  ECHART option 
         function setOption (start, end) {
@@ -275,6 +300,11 @@ export default {
 
                     if (data[idx]["id"] === "ECG") {
                         default_color.value = "#0d0000";
+                        axisLabel_show.value = !axisLabel_show.value
+                    }
+
+                    if (data[idx]["id"] === "Fz-Cz" || data[idx]["id"] === "Cz-Pz") {
+                        default_color.value = "#05803c";
                         axisLabel_show.value = !axisLabel_show.value
                     }
 
@@ -382,8 +412,7 @@ export default {
                             saveAsImage: {},
                             mytools: {
                                 show: true,
-                                title: "Clear",
-                                // icon: "M12,0A12,12 0 0,1 24,12A12,12 0 0,1 12,24A12,12 0 0,1 0,12A12,12 0 0,1 12,0M12,2A10,10 0 0,0 2,12C2,14.4 2.85,16.6 4.26,18.33L18.33,4.26C16.6,2.85 14.4,2 12,2M12,22A10,10 0 0,0 22,12C22,9.6 21.15,7.4 19.74,5.67L5.67,19.74C7.4,21.15 9.6,22 12,22Z",
+                                title: "All Graph",
                                 icon: sharpSignalCellularAlt,
                                 onclick: function () {
                                     // myChart.dispatchAction({
@@ -391,6 +420,31 @@ export default {
                                     //     type: "restore",
                                     // });
                                     All_data_Option(start_time.value, end_time.value)
+                                },
+                            },
+                            mytools1: {
+                                show: true,
+                                title: "Restore",
+                                icon: 'M178,101 q23,25 46,0 q6,-31 -22,-38 q-30,1 -27,26 l-12,-13 l30,0 l-17,14',
+                                // icon: sharpSignalCellularAlt,
+                                onclick: function () {
+                                    myChart.dispatchAction({
+                                        type: "restore",
+                                    });
+                                    page.value = Minpage.value
+                                },
+                            },
+                            mytools2: {
+                                show: true,
+                                title: "claer",
+                                icon: 'M 0 0 M 0 -1 L 2 1 M 2 0 M 0 -1 L 0 1 M 1 1 L 2 1 L 0 1 L 0 1 M 0 1 L 2 -1 M 2 1 L 2 1 M 2 1 L 2 1 L 2 0 L 2 -1 M 2 -1 L 2 -1 M 2 -1 L 2 -1 M 2 -1 L 1 -1 M 1 -1 L 0 -1',
+                                // icon: sharpSignalCellularAlt,
+                                onclick: function () {
+                                    myChart.dispatchAction({
+                                        type: "brush",
+                                        command: 'clear',
+                                        areas: []
+                                    });
                                 },
                             },
                         }

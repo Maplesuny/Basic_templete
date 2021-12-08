@@ -38,7 +38,7 @@
                                 <q-menu>
                                     <q-separator />
                                     <q-item clickable>
-                                        <q-item-section>Preferences</q-item-section>
+                                        <q-item-section>Description</q-item-section>
                                         <q-item-section side>
                                             <q-icon name="keyboard_arrow_right" />
                                         </q-item-section>
