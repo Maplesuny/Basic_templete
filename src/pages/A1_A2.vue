@@ -36,7 +36,7 @@ export default {
         let select_end = ref(0);
 
         const start_time = ref(0)
-        const end_time = ref(700)
+        const end_time = ref(70)
         var default_startTime = ref(0)
         var default_endTime = ref(10)
         const montage_type = ref(0)
@@ -346,9 +346,9 @@ export default {
                             show: false
                         },
                         // interval、min、max 要一起搭配
-                        interval: 100000,
-                        max: 200,
-                        min: -200,
+                        // interval: 100000,
+                        // max: 200,
+                        // min: -200,
                     })
                     grid.push({
                         id: idx,
