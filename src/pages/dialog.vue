@@ -13,7 +13,7 @@
                     <div class="text-h6">Set Symptom</div>
                 </q-card-section>
                 <q-separator />
-                <q-card-section class="q-pt-none" style="width: 550px; height: 25vh">
+                <q-card-section class="q-pt-none" style="width: 550px; height: 30vh">
                     <div class="q-pa-md q-gutter-sm" style="display: flex">
                         <div class="q-gutter-sm">
                             <q-radio dense v-model="symptom" val="Normal" label="Normal" />
@@ -31,6 +31,54 @@
                         </div>
                     </div>
                     <q-separator />
+                    <div class="q-pa-md" style="max-width: 500px">
+                        <div class="q-gutter-xs">
+                            <q-checkbox
+                                v-model="selection"
+                                val="Fp1-A1"
+                                label="Fp1-A1"
+                                color="teal"
+                            />
+                            <q-checkbox v-model="selection" val="F3-A1" label="F3-A1" color="teal" />
+                            <q-checkbox v-model="selection" val="C3-A1" label="C3-A1" color="teal" />
+                            <q-checkbox v-model="selection" val="O1-A1" label color="teal" />
+                            <q-checkbox
+                                v-model="selection"
+                                val="teal4"
+                                label="Fp2-A2"
+                                color="teal"
+                            />
+                            <q-checkbox
+                                v-model="selection"
+                                val="teal5"
+                                label="Fp4-A4"
+                                color="teal"
+                            />
+                            <q-checkbox v-model="selection" val="teal6" label="O2-A2" color="teal" />
+                            <q-checkbox v-model="selection" val="teal7" label="F7-A1" color="teal" />
+                            <q-checkbox v-model="selection" val="teal8" label="T3-A1" color="teal" />
+                            <q-checkbox v-model="selection" val="teal9" label="T5-A1" color="teal" />
+                            <q-checkbox
+                                v-model="selection"
+                                val="teal10"
+                                label="F8-A2"
+                                color="teal"
+                            />
+                            <q-checkbox
+                                v-model="selection"
+                                val="teal11"
+                                label="T4-A2"
+                                color="teal"
+                            />
+                            <q-checkbox
+                                v-model="selection"
+                                val="teal12"
+                                label="T6-A2"
+                                color="teal"
+                            />
+                            <q-checkbox v-model="selection" val="teal13" label="ECG" color="teal" />
+                        </div>
+                    </div>
                     <!--menu-->
                     <div class="q-pa-md">
                         <div class="q-gutter-md row items-center">
@@ -97,6 +145,7 @@
                         </div>
                     </div>
                 </q-card-section>
+
                 <q-card-actions align="right" class="text-primary">
                     <q-btn flat label="Cancel" v-close-popup />
                     <q-btn flat label="OK" v-close-popup @click="ok_send" />
@@ -119,13 +168,9 @@ export default {
         const symptom = ref("");
         // save 病理特徵
         const select_features = ref("");
-
         //Dialog button按鈕
         const select_button = ref('SELECT')
-
         const color = ref('primary')
-
-
         //vuex 
         const { todos, addTodo, saveid } = useTodo_function()
         // 病理特徵選取後儲存
@@ -138,18 +183,15 @@ export default {
         watch(symptom, () => {
             console.log("所選取的症狀: ", symptom.value)
         })
-
         // 設定Dialo OK後傳到TODO那邊
         function ok_send () {
             console.log('Dialog傳送症狀的值出去，值為:', select_features.value)
             context.emit('select_feature', select_features.value)
             select_button.value = symptom.value
-
             // if (select_button.value != 'Normal') {
             //     color.value = 'negative'
             // }
             select_button.value === 'Normal' ? (color.value = 'primary') : (color.value = 'negative')
-
             if (symptom.value === '') {
                 alert('Please Check your selection  ')
                 select_button.value = 'No select option'
@@ -158,7 +200,6 @@ export default {
                 return
             }
         }
-
         return {
             send_value,
             symptom,
@@ -167,8 +208,9 @@ export default {
             select_button,
             select_features,
             ok_send,
-            color
-
+            color,
+            shape: ref('line'),
+            selection: ref(['O1-A1', 'F3-A1'])
         };
     },
 };

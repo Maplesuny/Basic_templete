@@ -1,51 +1,51 @@
 <template>
-    <div class="q-pa-md">
-        <q-scroll-area style="height:840px; max-width:500px;">
-            <q-list bordered separator>
-                <q-item v-for="todo in todos" :key="todo.id">
+    <!-- <div class="q-pa-md"> -->
+    <q-scroll-area style="height:100%; max-width:500px;">
+        <q-list bordered separator>
+            <q-item v-for="todo in todos" :key="todo.id">
+                <div class="q-pa-md">
+                    <div class="q-gutter-sm">
+                        <q-checkbox v-model="todo.done" />
+                    </div>
+                    <div class="q-px-sm"></div>
+                </div>
+                <q-item-section>
+                    <!--第一個顯示大Title-->
+                    <q-item-label overline>OVERLINE</q-item-label>
+                    <q-item-label>{{ todo.title }}</q-item-label>
+                </q-item-section>
+                <div class="q-pa-sm">
+                    <q-btn
+                        ripple
+                        round
+                        icon="clear"
+                        color="red"
+                        class="q-ma-sm"
+                        size="10px"
+                        v-if="todo.done"
+                        @click="removeTodo(todo.id)"
+                    ></q-btn>
+                </div>
+                <!--病理特徵-->
+                <q-item v-if="!todo.done">
                     <div class="q-pa-md">
-                        <div class="q-gutter-sm">
-                            <q-checkbox v-model="todo.done" />
-                        </div>
-                        <div class="q-px-sm"></div>
+                        <q-item-section>
+                            <!-- <q-btn unelevated rounded color="primary">{{ seleted }}</q-btn> -->
+                            <!-- <q-btn unelevated rounded color="primary">select</q-btn> -->
+                            <selectd></selectd>
+                        </q-item-section>
                     </div>
-                    <q-item-section>
-                        <!--第一個顯示大Title-->
-                        <q-item-label overline>OVERLINE</q-item-label>
-                        <q-item-label>{{ todo.title }}</q-item-label>
-                    </q-item-section>
-                    <div class="q-pa-sm">
-                        <q-btn
-                            ripple
-                            round
-                            icon="clear"
-                            color="red"
-                            class="q-ma-sm"
-                            size="10px"
-                            v-if="todo.done"
-                            @click="removeTodo(todo.id)"
-                        ></q-btn>
-                    </div>
-                    <!--病理特徵-->
-                    <q-item v-if="!todo.done">
-                        <div class="q-pa-md">
-                            <q-item-section>
-                                <!-- <q-btn unelevated rounded color="primary">{{ seleted }}</q-btn> -->
-                                <!-- <q-btn unelevated rounded color="primary">select</q-btn> -->
-                                <selectd></selectd>
-                            </q-item-section>
-                        </div>
-                    </q-item>
                 </q-item>
-            </q-list>
-            <!--用這樣會出現怪怪的-->
-            <!-- <q-input outlined v-model="$props.inputText" @keypress.enter="addTodo" /> -->
-            <q-input outlined v-model="newTodo" @keypress.enter="addTodo" />
-            <q-btn @click="addTodo">Send</q-btn>
-            <p>{{ inputText }}</p>
-            <!-- <p>{{ aa }}</p> -->
-        </q-scroll-area>
-    </div>
+            </q-item>
+        </q-list>
+        <!--用這樣會出現怪怪的-->
+        <!-- <q-input outlined v-model="$props.inputText" @keypress.enter="addTodo" /> -->
+        <q-input outlined v-model="newTodo" @keypress.enter="addTodo" />
+        <q-btn @click="addTodo">Send</q-btn>
+        <p>{{ inputText }}</p>
+        <!-- <p>{{ aa }}</p> -->
+    </q-scroll-area>
+    <!-- </div> -->
 </template>
 
 <script>

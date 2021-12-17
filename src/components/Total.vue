@@ -1,7 +1,7 @@
 <template>
-    <div class="q-pa-md">
-        <div class="q-gutter-y-md" style="max-width:2400px">
-            <q-card>
+    <div class="q-pa-md full-height">
+        <div class="full-height" style="max-width:2400px">
+            <q-card class="flex fit">
                 <q-tabs
                     v-model="which"
                     dense
@@ -15,7 +15,7 @@
                     <q-tab name="CZ" label="CZ Montage" />
                     <q-tab name="Double_Banana" label="Double Banana" />
                 </q-tabs>
-                <q-tab-panels v-model="which" keep-alive>
+                <q-tab-panels v-model="which" keep-alive style="height:96%;width:100%">
                     <q-tab-panel name="A1_A2">
                         <A1_A2></A1_A2>
                     </q-tab-panel>

@@ -1,5 +1,5 @@
 <template>
-    <q-layout view="hHh  Lpr lFf" class="shadow-2 rounded-borders">
+    <q-layout view="hHh Lpr lFf">
         <q-header elevated>
             <q-toolbar class="bg-blue-grey-6">
                 <q-btn flat @click="drawer = !drawer" round dense icon="menu" />
@@ -38,7 +38,7 @@
                         </q-item-section>
                         <q-item-section>CZ</q-item-section>
                     </q-item>
-                    <q-item to="/eeg" exact>
+                    <q-item to="/Double_Banana" exact>
                         <q-item-section avatar>
                             <q-icon name="insert_chart_outlined"></q-icon>
                         </q-item-section>
@@ -53,14 +53,13 @@
                 </q-list>
             </q-scroll-area>
         </q-drawer>
-        <q-page-container>
+        <q-page-container style="height: 100vh">
             <router-view />
         </q-page-container>
     </q-layout>
 </template>
 
 <script>
-
 import { defineComponent, ref } from 'vue'
 export default defineComponent({
     name: 'MainLayout',
